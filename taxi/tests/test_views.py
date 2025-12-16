@@ -205,7 +205,10 @@ class PrivatePagesTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, manufacturer_name)
         self.assertEqual(len(response.context["manufacturer_list"]), 1)
-        self.assertEqual(response.context["manufacturer_list"][0].name, manufacturer_name)
+        self.assertEqual(
+            response.context["manufacturer_list"][0].name,
+            manufacturer_name
+        )
 
     def test_manufacturer_search_not_found(self):
         response = self.client.get(

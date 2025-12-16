@@ -44,7 +44,6 @@ class ModelsTests(TestCase):
             "test (testus testenko)"
         )
 
-
     def test_create_driver_with_license(self):
         self.assertEqual(
             self.driver.license_number,
