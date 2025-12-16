@@ -137,12 +137,6 @@ class PrivatePagesTest(TestCase):
         self.user.refresh_from_db()
         self.assertNotIn(self.car, self.user.cars.all())
 
-    def test_search_no_results(self):
-        response = self.client.get(CAR_LIST_URL, {"model": "NonExistentModel"})
-        self.assertEqual(response.status_code, 200)
-        self.assertNotContains(response, self.car.model)
-        self.assertQuerySetEqual(response.context["car_list"], [])
-
     def test_manufacturer_create(self):
         initial_count = Manufacturer.objects.count()
         response = self.client.post(
@@ -182,6 +176,72 @@ class PrivatePagesTest(TestCase):
         self.assertEqual(Manufacturer.objects.count(), initial_count - 1)
         with self.assertRaises(Manufacturer.DoesNotExist):
             Manufacturer.objects.get(pk=manufacturer_to_delete.pk)
+
+    def test_successful_car_search(self):
+        car_name = "SearchCarModel"
+        manufacturer_for_car = Manufacturer.objects.create(
+            name="CarMan", country="USA"
+        )
+        Car.objects.create(
+            model=car_name, manufacturer=manufacturer_for_car
+        )
+
+        response = self.client.get(
+            CAR_LIST_URL, {"model": car_name}
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, car_name)
+        self.assertEqual(len(response.context["car_list"]), 1)
+        self.assertEqual(response.context["car_list"][0].model, car_name)
+
+    def test_manufacturer_search_found(self):
+        manufacturer_name = "SearchManName"
+        Manufacturer.objects.create(
+            name=manufacturer_name, country="Country"
+        )
+        response = self.client.get(
+            MANUFACTURER_LIST_URL, {"name": manufacturer_name}
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, manufacturer_name)
+        self.assertEqual(len(response.context["manufacturer_list"]), 1)
+        self.assertEqual(response.context["manufacturer_list"][0].name, manufacturer_name)
+
+    def test_manufacturer_search_not_found(self):
+        response = self.client.get(
+            MANUFACTURER_LIST_URL, {"name": "NonExistentManufacturer"}
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertQuerySetEqual(
+            response.context["manufacturer_list"], []
+        )
+
+    def test_driver_search_found(self):
+        driver_username = "searchdriver"
+        get_user_model().objects.create_user(
+            username=driver_username,
+            password="pwd",
+            license_number="SRCHDRV"
+        )
+
+        response = self.client.get(
+            DRIVER_LIST_URL, {"username": driver_username}
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, driver_username)
+        self.assertEqual(len(response.context["driver_list"]), 1)
+        self.assertEqual(
+            response.context["driver_list"][0].username, driver_username
+        )
+
+    def test_driver_search_not_found(self):
+        response = self.client.get(
+            DRIVER_LIST_URL, {"username": "NonExistentDriver"}
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertQuerySetEqual(
+            response.context["driver_list"], []
+        )
 
     def test_car_create(self):
         initial_count = Car.objects.count()
