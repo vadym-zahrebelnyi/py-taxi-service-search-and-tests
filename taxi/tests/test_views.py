@@ -58,7 +58,9 @@ class PublicPagesTest(TestCase):
         )
 
     def test_login_required_driver_detail(self):
-        driver_detail_url = reverse("taxi:driver-detail", kwargs={"pk": self.driver.pk})
+        driver_detail_url = reverse(
+            "taxi:driver-detail", kwargs={"pk": self.driver.pk}
+        )
         self.assertNotEqual(
             self.client.get(driver_detail_url).status_code, 200
         )
@@ -124,7 +126,9 @@ class PrivatePagesTest(TestCase):
     def test_toggle_assign_car(self):
         self.assertNotIn(self.car, self.user.cars.all())
 
-        assign_url = reverse("taxi:toggle-car-assign", kwargs={"pk": self.car.pk})
+        assign_url = reverse(
+            "taxi:toggle-car-assign", kwargs={"pk": self.car.pk}
+        )
         self.client.get(assign_url)
         self.user.refresh_from_db()
         self.assertIn(self.car, self.user.cars.all())
@@ -141,7 +145,9 @@ class PrivatePagesTest(TestCase):
 
     def test_manufacturer_pagination(self):
         for i in range(10):
-            Manufacturer.objects.create(name=f"Test Manufacturer {i}", country="Test")
+            Manufacturer.objects.create(
+                name=f"Test Manufacturer {i}", country="Test"
+            )
 
         response = self.client.get(MANUFACTURER_LIST_URL)
         self.assertEqual(response.status_code, 200)
@@ -160,7 +166,9 @@ class PrivatePagesTest(TestCase):
 
     def test_car_pagination(self):
         for i in range(10):
-            Car.objects.create(model=f"Test Car {i}", manufacturer=self.manufacturer)
+            Car.objects.create(
+                model=f"Test Car {i}", manufacturer=self.manufacturer
+            )
 
         response = self.client.get(CAR_LIST_URL)
         self.assertEqual(response.status_code, 200)
@@ -213,7 +221,9 @@ class PrivatePagesTest(TestCase):
 
     def test_manufacturer_update(self):
         response = self.client.post(
-            reverse("taxi:manufacturer-update", kwargs={"pk": self.manufacturer.pk}),
+            reverse(
+                "taxi:manufacturer-update", kwargs={"pk": self.manufacturer.pk}
+            ),
             data={"name": "UpdatedName", "country": self.manufacturer.country}
         )
         self.assertEqual(response.status_code, 302)
@@ -222,10 +232,15 @@ class PrivatePagesTest(TestCase):
         self.assertEqual(self.manufacturer.name, "UpdatedName")
 
     def test_manufacturer_delete(self):
-        manufacturer_to_delete = Manufacturer.objects.create(name="ToDelete", country="Del")
+        manufacturer_to_delete = Manufacturer.objects.create(
+            name="ToDelete", country="Del"
+        )
         initial_count = Manufacturer.objects.count()
         response = self.client.post(
-            reverse("taxi:manufacturer-delete", kwargs={"pk": manufacturer_to_delete.pk})
+            reverse(
+                "taxi:manufacturer-delete",
+                kwargs={"pk": manufacturer_to_delete.pk}
+            )
         )
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, MANUFACTURER_LIST_URL)
@@ -246,7 +261,9 @@ class PrivatePagesTest(TestCase):
         self.assertRedirects(response, CAR_LIST_URL)
         self.assertEqual(Car.objects.count(), initial_count + 1)
         new_car = Car.objects.get(model="NewCar")
-        self.assertEqual(list(new_car.drivers.values_list("pk", flat=True)), driver_pks)
+        self.assertEqual(
+            list(new_car.drivers.values_list("pk", flat=True)), driver_pks
+        )
 
     def test_car_update(self):
         other_driver = get_user_model().objects.create_user(
@@ -268,7 +285,9 @@ class PrivatePagesTest(TestCase):
         self.assertIn(other_driver, self.car.drivers.all())
 
     def test_car_delete(self):
-        car_to_delete = Car.objects.create(model="ToDelete", manufacturer=self.manufacturer)
+        car_to_delete = Car.objects.create(
+            model="ToDelete", manufacturer=self.manufacturer
+        )
         initial_count = Car.objects.count()
         response = self.client.post(
             reverse("taxi:car-delete", kwargs={"pk": car_to_delete.pk})
@@ -289,11 +308,17 @@ class PrivatePagesTest(TestCase):
             "first_name": "New",
             "last_name": "Driver",
         }
-        response = self.client.post(reverse("taxi:driver-create"), data=form_data)
+        response = self.client.post(
+            reverse("taxi:driver-create"), data=form_data
+        )
         if response.status_code == 200:
             form = response.context["form"]
             self.fail(f"Form validation failed with errors: {form.errors}")
-        self.assertEqual(response.status_code, 302, f"Expected 302 redirect, got {response.status_code}")
+        self.assertEqual(
+            response.status_code,
+            302,
+            f"Expected 302 redirect, got {response.status_code}"
+        )
         self.assertEqual(get_user_model().objects.count(), initial_count + 1)
         new_driver = get_user_model().objects.get(username="newdriver")
         self.assertEqual(response.status_code, 302)
@@ -323,4 +348,3 @@ class PrivatePagesTest(TestCase):
         self.assertEqual(get_user_model().objects.count(), initial_count - 1)
         with self.assertRaises(get_user_model().DoesNotExist):
             get_user_model().objects.get(pk=driver_to_delete.pk)
-

@@ -43,7 +43,7 @@ class CarSearchFormTest(TestCase):
         self.assertEqual(form.cleaned_data["model"], "")
 
     def test_car_search_form_no_data(self):
-        form = CarSearchForm(data={}) # Fix: Pass empty data dictionary
+        form = CarSearchForm(data={})
         self.assertTrue(form.is_valid())
         self.assertEqual(form.cleaned_data["model"], "")
 
@@ -60,7 +60,7 @@ class DriverSearchFormTest(TestCase):
         self.assertEqual(form.cleaned_data["username"], "")
 
     def test_driver_search_form_no_data(self):
-        form = DriverSearchForm(data={}) # Fix: Pass empty data dictionary
+        form = DriverSearchForm(data={})
         self.assertTrue(form.is_valid())
         self.assertEqual(form.cleaned_data["username"], "")
 
@@ -70,24 +70,41 @@ class LicenseNumberValidationTest(TestCase):
         self.assertEqual(validate_license_number("ABC12345"), "ABC12345")
 
     def test_validate_license_number_invalid_length(self):
-        with self.assertRaisesMessage(ValidationError, "License number should consist of 8 characters"):
+        with self.assertRaisesMessage(
+                ValidationError,
+                "License number should consist of 8 characters"
+        ):
             validate_license_number("ABC1234")
-        with self.assertRaisesMessage(ValidationError, "License number should consist of 8 characters"):
+        with self.assertRaisesMessage(
+                ValidationError,
+                "License number should consist of 8 characters"
+        ):
             validate_license_number("ABC123456")
 
     def test_validate_license_number_invalid_prefix_not_uppercase(self):
-        with self.assertRaisesMessage(ValidationError, "First 3 characters should be uppercase letters"):
+        with self.assertRaisesMessage(
+                ValidationError,
+                "First 3 characters should be uppercase letters"
+        ):
             validate_license_number("abc12345")
 
     def test_validate_license_number_invalid_prefix_not_alpha(self):
-        with self.assertRaisesMessage(ValidationError, "First 3 characters should be uppercase letters"):
+        with self.assertRaisesMessage(
+                ValidationError,
+                "First 3 characters should be uppercase letters"
+        ):
             validate_license_number("AB123456")
 
     def test_validate_license_number_invalid_suffix_not_digit(self):
-        # Fix: Ensure input has correct length but invalid suffix
-        with self.assertRaisesMessage(ValidationError, "Last 5 characters should be digits"):
+        with self.assertRaisesMessage(
+                ValidationError,
+                "Last 5 characters should be digits"
+        ):
             validate_license_number("ABCDEABC")
-        with self.assertRaisesMessage(ValidationError, "Last 5 characters should be digits"):
+        with self.assertRaisesMessage(
+                ValidationError,
+                "Last 5 characters should be digits"
+        ):
             validate_license_number("ABC1234A")
 
 
@@ -116,7 +133,10 @@ class DriverCreationFormTest(TestCase):
         form = DriverCreationForm(data=form_data)
         self.assertFalse(form.is_valid())
         self.assertIn("license_number", form.errors)
-        self.assertIn("License number should consist of 8 characters", form.errors["license_number"])
+        self.assertIn(
+            "License number should consist of 8 characters",
+            form.errors["license_number"]
+        )
 
     def test_driver_creation_form_password_mismatch(self):
         form_data = {
@@ -129,8 +149,11 @@ class DriverCreationFormTest(TestCase):
         }
         form = DriverCreationForm(data=form_data)
         self.assertFalse(form.is_valid())
-        self.assertIn("password2", form.errors) # Fix: Correct error key
-        self.assertIn("The two password fields didn’t match.", form.errors["password2"])
+        self.assertIn("password2", form.errors)
+        self.assertIn(
+            "The two password fields didn’t match.",
+            form.errors["password2"]
+        )
 
 
 class DriverLicenseUpdateFormTest(TestCase):
@@ -139,17 +162,33 @@ class DriverLicenseUpdateFormTest(TestCase):
         self.assertTrue(form.is_valid(), form.errors)
 
     def test_driver_license_update_form_invalid_license_number(self):
-        form = DriverLicenseUpdateForm(data={"license_number": "ABC123"})  # Invalid length
+        form = DriverLicenseUpdateForm(
+            data={"license_number": "ABC123"}
+        )
         self.assertFalse(form.is_valid())
         self.assertIn("license_number", form.errors)
-        self.assertIn("License number should consist of 8 characters", form.errors["license_number"])
+        self.assertIn(
+            "License number should consist of 8 characters",
+            form.errors["license_number"]
+        )
 
 
 class CarFormTest(TestCase):
     def setUp(self):
-        self.manufacturer = Manufacturer.objects.create(name="TestMan", country="TestCountry")
-        self.driver1 = get_user_model().objects.create_user(username="driver1", password="pwd", license_number="DRV11111")
-        self.driver2 = get_user_model().objects.create_user(username="driver2", password="pwd", license_number="DRV22222")
+        self.manufacturer = Manufacturer.objects.create(
+            name="TestMan",
+            country="TestCountry"
+        )
+        self.driver1 = get_user_model().objects.create_user(
+            username="driver1",
+            password="pwd",
+            license_number="DRV11111"
+        )
+        self.driver2 = get_user_model().objects.create_user(
+            username="driver2",
+            password="pwd",
+            license_number="DRV22222"
+        )
 
     def test_car_form_valid(self):
         form_data = {
