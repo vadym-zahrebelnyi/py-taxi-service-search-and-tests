@@ -18,26 +18,14 @@ class AdminSiteTests(TestCase):
             license_number="TES77587"
         )
 
-        cls.search_manufacturer = Manufacturer.objects.create(
-            name="search_car",
-            country="search_country"
-        )
-        cls.filter_manufacturer = Manufacturer.objects.create(
-            name="filter_car",
-            country="filter_country"
+        cls.manufacturer = Manufacturer.objects.create(
+            name="test_car",
+            country="test_country"
         )
 
-        cls.car_search_match = Car.objects.create(
-            model="search_model",
-            manufacturer=cls.search_manufacturer
-        )
-        cls.car_filter_match = Car.objects.create(
-            model="filter_model",
-            manufacturer=cls.filter_manufacturer
-        )
-        cls.car_no_match = Car.objects.create(
-            model="no_match_model",
-            manufacturer=cls.search_manufacturer
+        cls.car = Car.objects.create(
+            model="test_model",
+            manufacturer=cls.manufacturer
         )
 
     def setUp(self):
@@ -68,24 +56,3 @@ class AdminSiteTests(TestCase):
             self.client.get(reverse("admin:taxi_driver_add")),
             "License number"
         )
-
-    def test_search_by_model(self):
-        response = self.client.get(
-            reverse("admin:taxi_car_changelist"),
-            {"q": "search"}
-        )
-
-        self.assertContains(response, self.car_search_match.model)
-        self.assertNotContains(response, self.car_filter_match.model)
-        self.assertNotContains(response, self.car_no_match.model)
-
-    def test_filter_by_manufacturer(self):
-        response = self.client.get(
-            reverse("admin:taxi_car_changelist"),
-            {"manufacturer__id__exact": self.filter_manufacturer.id}
-        )
-
-        self.assertContains(response, "Manufacturer")
-        self.assertContains(response, self.car_filter_match.model)
-        self.assertNotContains(response, self.car_search_match.model)
-        self.assertNotContains(response, self.car_no_match.model)

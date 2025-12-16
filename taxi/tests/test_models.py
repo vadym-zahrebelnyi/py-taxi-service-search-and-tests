@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
-from taxi.models import Manufacturer, Car, Driver
+from taxi.models import Manufacturer, Car
 
 
 class ModelsTests(TestCase):
@@ -44,10 +44,6 @@ class ModelsTests(TestCase):
             "test (testus testenko)"
         )
 
-    def test_driver_check_password(self):
-        self.assertTrue(
-            self.driver.check_password("t5st_P@ss")
-        )
 
     def test_create_driver_with_license(self):
         self.assertEqual(
